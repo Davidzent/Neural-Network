@@ -151,6 +151,9 @@ public class Population {
       populationLife = 0;
       currentBestScore=0;
       currentBestCorrect=0;
+      //done() did these, but a generation can now end on the guess cap instead
+      passingGrade=0.4;
+      cntAlive=pop.size();
 
     }
   

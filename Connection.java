@@ -32,7 +32,9 @@ public class Connection {
     }
 
     public Connection clone(Node start, Node end) {
-        return new Connection(start, end, weight, ID);
+        Connection clone = new Connection(start, end, weight, ID);
+        clone.enabled = enabled;// a disabled connection has to stay disabled
+        return clone;
     }
 
     public Node getStart() {

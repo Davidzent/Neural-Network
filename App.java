@@ -8,6 +8,8 @@ class App {
   public static JFrame frame = new JFrame();
   private static int timeout = 200;
   private static boolean showNothing = false;
+  //a perfect player never guesses wrong so never dies, cap the generation instead
+  private static final int maxGuess = 500;
 
   public static void main(String[] args) throws InterruptedException {
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -16,7 +18,7 @@ class App {
     frame.setVisible(true);
 
     Population pop = new Population(1000);
-    int squareType = (int) Math.floor(Math.random() * 8);
+    int squareType = (int) Math.floor(Math.random() * 4);
     Square square = types(squareType, 0, 0);
     // square.show();
     Graphics2D g2d = (Graphics2D) frame.getGraphics();
@@ -30,7 +32,7 @@ class App {
     int temp = timeout;
 
     do {
-      while (!pop.done()) {
+      while (!pop.done() && guess < maxGuess) {
         if (EventListener.isAddPressed()) {
           cnt++;
           if(cnt>=10)timeout+=10;
@@ -57,7 +59,7 @@ class App {
           System.out.println("pressing M:"+showNothing);
         }
         g2d.clearRect(0, 0, 1440, 750);
-        squareType = (int) Math.floor(Math.random() * 8);
+        squareType = (int) Math.floor(Math.random() * 4);
         square = types(squareType, 0, 0);
         pop.updateAlive(square, squareType, showNothing);
         // drawBrain(pop);
@@ -118,54 +120,25 @@ class App {
         s.pixels[1][1] = new Pixel(x + 1, y + 1, 0);
         break;
 
-      case 1:// solid Black
-
-        s.pixels[0][0] = new Pixel(x, y, 1);
-        s.pixels[0][1] = new Pixel(x, y + 1, 1);
-        s.pixels[1][0] = new Pixel(x + 1, y, 1);
-        s.pixels[1][1] = new Pixel(x + 1, y + 1, 1);
-        break;
-
-      case 2:// vertical first
+      case 1:// vertical
         s.pixels[0][0] = new Pixel(x, y, 1);
         s.pixels[0][1] = new Pixel(x, y + 1, 0);
         s.pixels[1][0] = new Pixel(x + 1, y, 1);
         s.pixels[1][1] = new Pixel(x + 1, y + 1, 0);
         break;
 
-      case 3:// vertical second
-        s.pixels[0][0] = new Pixel(x, y, 0);
-        s.pixels[0][1] = new Pixel(x, y + 1, 1);
-        s.pixels[1][0] = new Pixel(x + 1, y, 0);
-        s.pixels[1][1] = new Pixel(x + 1, y + 1, 1);
-        break;
-
-      case 4:// diagonal top to bottom right
+      case 2:// diagonal
         s.pixels[0][0] = new Pixel(x, y, 1);
         s.pixels[0][1] = new Pixel(x, y + 1, 0);
         s.pixels[1][0] = new Pixel(x + 1, y, 0);
         s.pixels[1][1] = new Pixel(x + 1, y + 1, 1);
         break;
 
-      case 5: // bottom to top right
-        s.pixels[0][0] = new Pixel(x, y, 0);
-        s.pixels[0][1] = new Pixel(x, y + 1, 1);
-        s.pixels[1][0] = new Pixel(x + 1, y, 1);
-        s.pixels[1][1] = new Pixel(x + 1, y + 1, 0);
-        break;
-
-      case 6:// horizontal top
+      case 3:// horizontal
         s.pixels[0][0] = new Pixel(x, y, 1);
         s.pixels[0][1] = new Pixel(x, y + 1, 1);
         s.pixels[1][0] = new Pixel(x + 1, y, 0);
         s.pixels[1][1] = new Pixel(x + 1, y + 1, 0);
-        break;
-
-      case 7:// horizontal bottom
-        s.pixels[0][0] = new Pixel(x, y, 0);
-        s.pixels[0][1] = new Pixel(x, y + 1, 0);
-        s.pixels[1][0] = new Pixel(x + 1, y, 1);
-        s.pixels[1][1] = new Pixel(x + 1, y + 1, 1);
         break;
     }
     return s;

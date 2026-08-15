@@ -13,17 +13,14 @@ public class Brain {
         "BiasNode"
     };
     private final String[] OutputNodeNames = {
-        "Solid White",
-        "Solid Black",
-        "Vertical First",
-        "Vertical Second",
-        "Diagonal top to bottom",
-        "Diagonal bottom to top",
-        "Horizontal top",
-        "Horizontal bottom"
+        "Solid",
+        "Vertical",
+        "Diagonal",
+        "Horizontal"
     };
     private final double WeightMutationRate = 0.8;
-    private final double ConnectionMutationRate = 0.05;
+    private final double ConnectionMutationRate = 0.2;
+    //kept low, the 4 shapes need no hidden nodes
     private final double NodeMutationRate = 0.01;
     private static int nextCon = 0;
     private Node biasNode;
@@ -205,15 +202,14 @@ public class Brain {
         Node newNode = new Node(newNodeNo);
         int SLayer = temp.getStart().getLayer();
         int ELayer = temp.getEnd().getLayer();
-        int NLayer = (ELayer - SLayer) / 2;
-        newNode.setLayer(NLayer);
-        if (NLayer == 0) {
+        // the new node goes between the two ends, not at (ELayer - SLayer) / 2
+        if (ELayer - SLayer > 1) {// there is already a layer in between, use it
+            newNode.setLayer((SLayer + ELayer) / 2);
+            network.AddOnLayer(newNode);
+        } else {// neighbouring layers, push a new one in
             newNode.setLayer(ELayer);
             network.AddOnBetweenLayer(newNode);
             layers++;
-        } else {
-
-            network.AddOnLayer(newNode);
         }
 
         nextNode++;

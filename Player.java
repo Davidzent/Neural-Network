@@ -15,7 +15,8 @@ public class Player{
     int gen = 0;
   
     int genomeInputs = 4;
-    int genomeOutputs = 8;
+    //one output per shape, splitting them into 8 by inversion takes ~80 gens instead of 2
+    int genomeOutputs = 4;
     
     double[] vision = new double[genomeInputs];//t he input array fed into the neuralNet 
     double[] decision = new double[genomeOutputs]; //the out put of the NN 
@@ -36,10 +37,12 @@ public class Player{
     //---------------------------------------------------------------------------------------------------------------------------------------------------------
     //fot Genetic algorithm
     void calculateFitness() {
-      fitness = score*score;
+      //select on accuracy, not on lucky streaks. cast first, int maths overflows past 46340
+      fitness = (double)correct*correct + lifespan / 20.0;
     }
     
     boolean update(int ans,double pass,int attempt){
+      lifespan++;
       if(ans==guess){
         combo++;
         score+=combo*1;
