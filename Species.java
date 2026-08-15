@@ -12,7 +12,8 @@ public class Species {
     //coefficients for testing compatibility 
     private double excessCoeff = 1;
     private double weightDiffCoeff = 0.5;
-    private double compatibilityThreshold = 3;
+    //low, so more species. fitness sharing then shields a brain that just grew a connection
+    private double compatibilityThreshold = 0.5;
     //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     //empty constructor
   

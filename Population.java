@@ -9,7 +9,7 @@ public class Population {
     int currentBestScorePos=0;
     int currentBestCorrect=0;
     int gen;
-    double passingGrade = 0.4;
+    double passingGrade = 0.6;
     ArrayList<ConnectionHistory> innovationHistory = new ArrayList<ConnectionHistory>();
     ArrayList<Player> genPlayers = new ArrayList<Player>();
     ArrayList<Species> species = new ArrayList<Species>();
@@ -61,8 +61,8 @@ public class Population {
           }
         }
       }
-      if(populationLife>50&&populationLife%10==0){
-        passingGrade+=0.01;
+      if(populationLife>25&&populationLife%10==0){
+        passingGrade+=0.02;
       }
       
     }
@@ -74,7 +74,7 @@ public class Population {
           return false;
         }
       }
-      passingGrade=0.4;
+      passingGrade=0.6;
       cntAlive=pop.size();
       return true;
     }
@@ -152,7 +152,7 @@ public class Population {
       currentBestScore=0;
       currentBestCorrect=0;
       //done() did these, but a generation can now end on the guess cap instead
-      passingGrade=0.4;
+      passingGrade=0.6;
       cntAlive=pop.size();
 
     }

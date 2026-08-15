@@ -12,15 +12,15 @@ public class Brain {
         "Pixel (1,1)",
         "BiasNode"
     };
-    private final String[] OutputNodeNames = {
-        "Solid",
-        "Vertical",
-        "Diagonal",
-        "Horizontal"
-    };
-    private final double WeightMutationRate = 0.8;
-    private final double ConnectionMutationRate = 0.2;
-    //kept low, the 4 shapes need no hidden nodes
+    //labels follow App.CLASSES
+    private final String[] OutputNodeNames = App.CLASSES == 4
+        ? new String[] { "Solid", "Vertical", "Diagonal", "Horizontal" }
+        : new String[] { "Solid White", "Solid Black", "Vertical First", "Vertical Second",
+                         "Diagonal top to bottom", "Diagonal bottom to top", "Horizontal top", "Horizontal bottom" };
+    private final double WeightMutationRate = 0.95;
+    //8 classes need ~24 connections, so how fast connections arrive is the main bottleneck
+    private final double ConnectionMutationRate = 0.5;
+    //kept low, these shapes need no hidden nodes
     private final double NodeMutationRate = 0.01;
     private static int nextCon = 0;
     private Node biasNode;
@@ -130,18 +130,35 @@ public class Brain {
             return;
         }
 
-        // get random nodes
-        int random1 = (int) (Math.random() * network.size());
-        int random2 = (int) (Math.random() * network.size());
-        Node randomNode1 = network.getByID(random1);
-        Node randomNode2 = network.getByID(random2);
+        Node randomNode1 = null, randomNode2 = null;
 
-        while (checkNewConnection(randomNode1, randomNode2)) {// while the random nodes are no good
-            // get new ones
-            random1 = (int) (Math.random() * network.size());
-            random2 = (int) (Math.random() * network.size());
+        //aim at a node nothing feeds yet, an unfed output is stuck at sigmoid(0) and unguessable
+        ArrayList<Node> starved = starvedNodes();
+        if (!starved.isEmpty() && Math.random() < 0.75) {
+            Node target = starved.get((int) (Math.random() * starved.size()));
+            ArrayList<Node> feeders = new ArrayList<Node>();
+            for (int i = 0; i < network.size(); i++) {
+                Node n = network.get(i);
+                if (n != null && n.getLayer() < target.getLayer() && !n.isConnected(target)) feeders.add(n);
+            }
+            if (!feeders.isEmpty()) {
+                randomNode1 = feeders.get((int) (Math.random() * feeders.size()));
+                randomNode2 = target;
+            }
+        }
+
+        if (randomNode1 == null) {// nothing starved, pick at random as before
+            int random1 = (int) (Math.random() * network.size());
+            int random2 = (int) (Math.random() * network.size());
             randomNode1 = network.getByID(random1);
             randomNode2 = network.getByID(random2);
+
+            while (checkNewConnection(randomNode1, randomNode2)) {// while the random nodes are no good
+                random1 = (int) (Math.random() * network.size());
+                random2 = (int) (Math.random() * network.size());
+                randomNode1 = network.getByID(random1);
+                randomNode2 = network.getByID(random2);
+            }
         }
 
         if (randomNode1.getLayer() > randomNode2.getLayer()) {// swap if the first random node is after the second
@@ -159,6 +176,20 @@ public class Brain {
         connections.add(new Connection(randomNode1, randomNode2, (Math.random() * 2 - 1),
                 connectionInnovationNumber));// changed this so if error here
         connectNodes();
+    }
+
+    //nodes with nothing feeding them yet
+    private ArrayList<Node> starvedNodes() {
+        ArrayList<Node> starved = new ArrayList<Node>();
+        for (int i = 0; i < network.size(); i++) {
+            Node n = network.get(i);
+            if (n == null || n.getLayer() == 0) continue;
+            boolean fed = false;
+            for (int j = 0; j < connections.size(); j++)
+                if (connections.get(j).isEnabled() && connections.get(j).getEnd() == n) { fed = true; break; }
+            if (!fed) starved.add(n);
+        }
+        return starved;
     }
 
     public boolean checkNewConnection(Node r1, Node r2) {

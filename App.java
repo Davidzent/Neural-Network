@@ -1,6 +1,5 @@
 import java.awt.Graphics2D;
 import java.util.concurrent.TimeUnit;
-
 import javax.swing.JFrame;
 
 class App {
@@ -10,6 +9,8 @@ class App {
   private static boolean showNothing = false;
   //a perfect player never guesses wrong so never dies, cap the generation instead
   private static final int maxGuess = 500;
+  //set to 4 or 8. 4 is one class per shape, 8 splits every shape by colour inversion
+  public static final int CLASSES = 8;
 
   public static void main(String[] args) throws InterruptedException {
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -18,8 +19,8 @@ class App {
     frame.setVisible(true);
 
     Population pop = new Population(1000);
-    int squareType = (int) Math.floor(Math.random() * 4);
-    Square square = types(squareType, 0, 0);
+    int squareType = (int) Math.floor(Math.random() * CLASSES);
+    Square square = types(patternFor(squareType), 0, 0);
     // square.show();
     Graphics2D g2d = (Graphics2D) frame.getGraphics();
     int guess = 0;
@@ -59,8 +60,8 @@ class App {
           System.out.println("pressing M:"+showNothing);
         }
         g2d.clearRect(0, 0, 1440, 750);
-        squareType = (int) Math.floor(Math.random() * 4);
-        square = types(squareType, 0, 0);
+        squareType = (int) Math.floor(Math.random() * CLASSES);
+        square = types(patternFor(squareType), 0, 0);
         pop.updateAlive(square, squareType, showNothing);
         // drawBrain(pop);
         if(!showNothing)square.show();
@@ -109,6 +110,11 @@ class App {
     // }
   }
 
+  //class index -> pattern index below. with 4 classes only one polarity of each shape is used
+  public static int patternFor(int type) {
+    return CLASSES == 4 ? type * 2 : type;
+  }
+
   public static Square types(int type, int x, int y) {
     Square s = new Square(2, 2);
 
@@ -120,25 +126,53 @@ class App {
         s.pixels[1][1] = new Pixel(x + 1, y + 1, 0);
         break;
 
-      case 1:// vertical
+      case 1:// solid black
+        s.pixels[0][0] = new Pixel(x, y, 1);
+        s.pixels[0][1] = new Pixel(x, y + 1, 1);
+        s.pixels[1][0] = new Pixel(x + 1, y, 1);
+        s.pixels[1][1] = new Pixel(x + 1, y + 1, 1);
+        break;
+
+      case 2:// vertical first
         s.pixels[0][0] = new Pixel(x, y, 1);
         s.pixels[0][1] = new Pixel(x, y + 1, 0);
         s.pixels[1][0] = new Pixel(x + 1, y, 1);
         s.pixels[1][1] = new Pixel(x + 1, y + 1, 0);
         break;
 
-      case 2:// diagonal
+      case 3:// vertical second
+        s.pixels[0][0] = new Pixel(x, y, 0);
+        s.pixels[0][1] = new Pixel(x, y + 1, 1);
+        s.pixels[1][0] = new Pixel(x + 1, y, 0);
+        s.pixels[1][1] = new Pixel(x + 1, y + 1, 1);
+        break;
+
+      case 4:// diagonal top to bottom right
         s.pixels[0][0] = new Pixel(x, y, 1);
         s.pixels[0][1] = new Pixel(x, y + 1, 0);
         s.pixels[1][0] = new Pixel(x + 1, y, 0);
         s.pixels[1][1] = new Pixel(x + 1, y + 1, 1);
         break;
 
-      case 3:// horizontal
+      case 5:// diagonal bottom to top right
+        s.pixels[0][0] = new Pixel(x, y, 0);
+        s.pixels[0][1] = new Pixel(x, y + 1, 1);
+        s.pixels[1][0] = new Pixel(x + 1, y, 1);
+        s.pixels[1][1] = new Pixel(x + 1, y + 1, 0);
+        break;
+
+      case 6:// horizontal top
         s.pixels[0][0] = new Pixel(x, y, 1);
         s.pixels[0][1] = new Pixel(x, y + 1, 1);
         s.pixels[1][0] = new Pixel(x + 1, y, 0);
         s.pixels[1][1] = new Pixel(x + 1, y + 1, 0);
+        break;
+
+      case 7:// horizontal bottom
+        s.pixels[0][0] = new Pixel(x, y, 0);
+        s.pixels[0][1] = new Pixel(x, y + 1, 0);
+        s.pixels[1][0] = new Pixel(x + 1, y, 1);
+        s.pixels[1][1] = new Pixel(x + 1, y + 1, 1);
         break;
     }
     return s;

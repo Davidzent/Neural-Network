@@ -15,19 +15,20 @@ public class Player{
     int gen = 0;
   
     int genomeInputs = 4;
-    //one output per shape, splitting them into 8 by inversion takes ~80 gens instead of 2
-    int genomeOutputs = 4;
+    //4 is perfect in a few gens, 8 takes ~80. set it in App.CLASSES
+    int genomeOutputs = App.CLASSES;
     
     double[] vision = new double[genomeInputs];//t he input array fed into the neuralNet 
     double[] decision = new double[genomeOutputs]; //the out put of the NN 
     double[] decisionHistory = new double[genomeOutputs];
+    boolean[] emitted = new boolean[genomeOutputs];//which classes this brain can actually produce
     
     Player(){
       brain = new Brain(genomeInputs, genomeOutputs);
     }
     
     void show(){
-      Square s = App.types(guess,3,0);
+      Square s = App.types(App.patternFor(guess),3,0);
       s.show(1);
 
 
@@ -38,7 +39,10 @@ public class Player{
     //fot Genetic algorithm
     void calculateFitness() {
       //select on accuracy, not on lucky streaks. cast first, int maths overflows past 46340
-      fitness = (double)correct*correct + lifespan / 20.0;
+      int distinct=0;
+      for(boolean b:emitted) if(b) distinct++;
+      //credit being able to produce a class at all, so a new connection pays off before its siblings arrive
+      fitness = (double)correct*correct * (1 + distinct/(double)genomeOutputs) + lifespan / 20.0;
     }
     
     boolean update(int ans,double pass,int attempt){
@@ -48,7 +52,7 @@ public class Player{
         score+=combo*1;
         correct++;
       }else{
-        if(attempt>=50&&score<attempt*pass||(attempt>500&&correct<attempt*pass)) dead=true;
+        if(attempt>=25&&score<attempt*pass||(attempt>500&&correct<attempt*pass)) dead=true;
         if(decisionHistory[ans] >= 10)score-=(int)decisionHistory[ans]/10;
         decisionHistory[ans]++;
         combo=0;
@@ -82,6 +86,7 @@ public class Player{
         }
       }
       guess=maxIndex;
+      emitted[guess]=true;
     }
     
     //---------------------------------------------------------------------------------------------------------------------------------------------------------
